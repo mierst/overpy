@@ -1,0 +1,12 @@
+{
+  "name": "overpy",
+  "version": "1.0.0",
+  "description": "OverPy Decompiler",
+  "main": "bot.js",
+  "scripts": {
+    "start": "pwd && ls && npm run bot.js"
+	
+  },
+  "author": "Zezombye",
+  "license": "GPL-3.0-or-later"
+}

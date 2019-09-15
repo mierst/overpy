@@ -1,0 +1,326 @@
+<!--
+ * This file is part of OverPy (https://github.com/Zezombye/overpy).
+ * Copyright (c) 2019 Zezombye.
+ * 
+ * This program is free software: you can redistribute it and/or modify  
+ * it under the terms of the GNU General Public License as published by  
+ * the Free Software Foundation, version 3.
+ *
+ * This program is distributed in the hope that it will be useful, but 
+ * WITHOUT ANY WARRANTY; without even the implied warranty of 
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU 
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License 
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ *
+-->
+<!--stfu firefox -->
+<meta charset="utf-8">
+
+<style>
+textarea {
+	resize: vertical;
+}
+</style>
+
+<center>
+	<a href="https://github.com/Zezombye/overpy"><h1>OverPy v1.0 language demo by Zezombye</h1></a>
+	<p><a href="https://github.com/Zezombye/overpy/blob/master/functions.md">Function documentation</a> | <button onclick="demoAddText();">Add example text</button></p>
+	
+	<div id="workshop-text" style="float:left; width:33%;">
+		<p>Workshop text</p>
+		<button onclick="demoDecompile()">Decompile</button>
+		<textarea id="workshop-textarea" onkeyup="getTextareaLineNumber(this, 'workshop');" onmouseup="this.onkeyup();" rows="20" style="width:100%;" wrap="off"></textarea> 
+		<p style="float:left;">line <span id="workshop-textarea-line-number"></span>, col <span id="workshop-textarea-col-number"></span></p>
+	</div>
+	
+	<div id="overpy-text" style="float:left; width:33%;">
+		<p>OverPy text</p>
+		<button onclick="demoCompile()">Compile</button>
+		<textarea id="overpy-textarea" onkeyup="getTextareaLineNumber(this, 'overpy');" onmouseup="this.onkeyup();" rows="20" style="width:100%;" wrap="off"></textarea> 
+		<p style="float:left;">line <span id="overpy-textarea-line-number"></span>, col <span id="overpy-textarea-col-number"></span></p>
+	</div>
+	
+	<div id="compiled-text" style="float:right; width:34%;">
+		<p>Compiled text</p>
+		<button onclick="compareOutputs()">Compare</button>
+		<textarea id="compiled-textarea" onkeyup="getTextareaLineNumber(this, 'compiled');" onmouseup="this.onkeyup();" rows="20" style="width:100%;" wrap="off"></textarea> 
+		<p style="float:left;">line <span id="compiled-textarea-line-number"></span>, col <span id="compiled-textarea-col-number"></span></p>
+	</div>
+</center>
+
+<script src="globalVars.js"></script>
+<script src="decompileTest.js"></script>
+<script src="compileTest.js"></script>
+<script src="keywords.js"></script>
+<script src="stringKw.js"></script>
+<script src="utils.js"></script>
+<script src="overpyDecompiler.js"></script>
+<script src="overpyCompiler.js"></script>
+
+
+<!--<script>
+
+//generate doc
+"use strict";
+
+var result = "Workshop function | OverPy function\n";
+result +=    "----------------- | ---------------\n";
+var funcList = actionKw.concat(valueFuncKw);
+
+function compare(a,b) {
+	if (a[1][0] < b[1][0]) return -1;
+	if (a[1][0] > b[1][0]) return 1;
+	return 0;
+}
+
+funcList = funcList.sort(compare);
+
+var functionsThatAreValues = [
+	"abort",
+	"attacker",
+	"backward",
+	"down",
+	"eventDamage",
+	"eventPlayer",
+	"forward",
+	"left",
+	"not",
+	"right",
+	"up",
+	"victim",
+]
+
+for (var i = 0; i < funcList.length; i++) {
+
+	var ws = funcList[i][1][0];
+	var couldNotBeAFunction = false;
+	if (functionsThatAreValues.indexOf(ws) > -1) {
+		couldNotBeAFunction = true;
+	}
+	ws = ws.replace(/[A-Z]/g, letter => ` ${letter.toUpperCase()}`);
+	ws = ws[0].toUpperCase()+ws.substring(1);
+	var py = funcList[i][0][0];
+	
+	if (py.startsWith("_&")) {
+		py = "<player>."+py.substring(2);
+	} else if (py.startsWith("_!")) {
+		ws += "(hero, team)";
+		py = py.substring(2)+"(team, hero)";
+	} else if (py.startsWith("_")) {
+		py = "(special function)";
+		couldNotBeAFunction = true;
+	}
+	if (py.endsWith("()")) {
+		py = py.substring(0, py.length-2);
+	}
+	
+	if (!couldNotBeAFunction) {
+		py += "()";
+		//ws += "()";
+	}
+
+	result += ws+" | "+py+"\n";
+}
+console.log(result);
+
+</script>-->
+
+<script>
+
+/*
+//check nb of actions/values unimplemented
+var counter = 0;
+var counter2 = 0;
+for (var h = 0; h < testvalues.length; h++) {
+	var isIn = false;
+	for (var i = 0; i < valueKw.length; i++) {
+		for (var j = 0; j < valueKw[i][1].length; j++) {
+			if (valueKw[i][1][j].toLowerCase() === testvalues[h]["name"].replace(/\s/g, "").toLowerCase()) {
+				isIn = true;
+			}
+		}
+	}
+	if (isIn) {
+		counter++;
+	} else {
+		console.log("Unimplemented value: "+testvalues[h]["name"]);
+		counter2++;
+	}
+}
+for (var h = 0; h < testactions.length; h++) {
+	var isIn = false;
+	for (var i = 0; i < actionKw.length; i++) {
+		for (var j = 0; j < actionKw[i][1].length; j++) {
+			if (actionKw[i][1][j].toLowerCase() === testactions[h]["name"].replace(/\s/g, "").toLowerCase()) {
+				isIn = true;
+			}
+		}
+	}
+	if (isIn) {
+		counter++;
+	} else {
+		console.log("Unimplemented action: "+testactions[h]["name"]);
+		counter2++;
+	}
+}
+console.log("implemented: "+counter);
+console.log("unimplemented: "+counter2);
+*/
+
+for (var i = 0; i < actionKw.length-1; i++) {
+	if (actionKw[i][1][0].toLowerCase() >= actionKw[i+1][1][0].toLowerCase()) {
+		console.log("Messed up alphabetical order for "+actionKw[i+1][1][0]);
+	}
+}
+
+for (var i = 0; i < valueFuncKw.length-1; i++) {
+	if (valueFuncKw[i][1][0].toLowerCase() >= valueFuncKw[i+1][1][0].toLowerCase()) {
+		console.log("Messed up alphabetical order for "+valueFuncKw[i+1][1][0]);
+	}
+}
+
+</script>
+
+
+<script>
+
+var demoGlobalVars = {};
+var demoPlayerVars = {};
+
+function getTextareaLineNumber(textarea, name) {
+	
+	textarea.value = textarea.value.replace(/\t/g, "    ");
+	
+	document.getElementById(name+"-textarea-line-number").innerHTML = textarea.value.substr(0, textarea.selectionStart).split("\n").length;
+	document.getElementById(name+"-textarea-col-number").innerHTML = textarea.selectionStart - textarea.value.substr(0, textarea.selectionStart).lastIndexOf("\n");
+}
+
+function demoDecompile() {
+	
+	var str = "";
+	try {
+		str = decompileAllRules(document.getElementById("workshop-textarea").value, demoGlobalVars, demoPlayerVars);
+	} catch (Error) {
+		console.log(Error);
+		str = "An error occurred. Press F12 (Firefox) or Ctrl+Shift+J (Chrome)";
+	}
+	document.getElementById("overpy-textarea").value = str;
+}
+
+function demoCompile() {
+	
+	var str = "";
+	try {
+		str = compile(document.getElementById("overpy-textarea").value);
+	} catch (Error) {
+		console.log(Error);
+		str = "An error occurred. Press F12 (Firefox) or Ctrl+Shift+J (Chrome)";
+	}
+	document.getElementById("compiled-textarea").value = str;
+}
+
+function demoAddText() {
+	demoGlobalVars = {
+		"a":"currentSectionWalls",
+		"b":"tpStarts",
+		"c":"tpDests",
+		"d":"deathplaneY",
+		"e":"roundWinners",
+		"f":"mapId",
+		"g":"hasFirstInfectionPassed",
+		"i":"sectionLoopIndex",
+		"j":"level",
+		"l":"lateTps",
+		"m":"sectionRadiuses",
+		"n":"currentSection",
+		"o":"firstInfectionLoopIndex",
+		"p":"matchTime",
+		"q":"countdownProgress",
+		"r":"roundProgress",
+		"s":"sectionData",
+		"t":"triggers",
+		"w":"walls",
+		"z":"zombieHero",
+	};
+	demoPlayerVars = {
+		b:"fastFireCountdown",
+		c:"tempPos",
+		f:"hasWonRound",
+		j:"wallLoopIndex",
+		l:"wasFirstZombieLastRound",
+		z:"team",
+	}
+	
+	document.getElementById("workshop-textarea").value = decompileTest;
+	document.getElementById("overpy-textarea").value = "";
+	document.getElementById("compiled-textarea").value = "";
+	
+}
+
+function compareOutputs() {
+	var workshopOutput = document.getElementById("workshop-textarea").value;
+	
+	//Numbers are annoying
+	for (var i = 0; i < workshopOutput.length; i++) {
+		if (workshopOutput[i] >= '0' && workshopOutput[i] <= '9') {
+			var j = i;
+			for (; (workshopOutput[j] >= '0' && workshopOutput[j] <= '9') || workshopOutput[j] === '.'; j++);
+			
+			//console.log(workshopOutput.substring(i, j));
+			
+			workshopOutput = workshopOutput.substring(0,i)+Number(workshopOutput.substring(i, j)).toString()+workshopOutput.substring(j);
+			i += Number(workshopOutput.substring(i, j)).toString().length+1;
+		}
+	}
+	
+	document.getElementById("workshop-textarea").value = workshopOutput;
+	
+	workshopOutput = workshopOutput.toLowerCase().replace(/\s/g, "")
+	
+	var compiledOutput = document.getElementById("compiled-textarea").value.toLowerCase().replace(/\s/g, "");
+	var workshopDiffOffset = -1;
+	var compiledDiffOffset = -1;
+	for (var i = 0; i < compiledOutput.length; i++) {
+		if (workshopOutput[i] !== compiledOutput[i]) {
+			workshopDiffOffset = i;
+			compiledDiffOffset = i;
+			console.log("Difference found: '"+workshopOutput[i]+"' vs '"+compiledOutput[i]+"'");
+			break;
+		}
+	}
+	
+	if (workshopDiffOffset === -1) {
+		alert("No differences found");
+		return;
+	}
+	
+	for (var i = 0; i < workshopDiffOffset+1; i++) {
+		if (/\s/.test(document.getElementById("workshop-textarea").value[i])) {
+			workshopDiffOffset++;
+		}
+	}
+	workshopDiffOffset--;
+	var workshopText = document.getElementById("workshop-textarea").value;
+	var lineEndBefore = workshopText.substring(0, workshopDiffOffset).lastIndexOf('\n');
+	var lineEndAfter = workshopDiffOffset+workshopText.substring(workshopDiffOffset).indexOf('\n');
+	console.log(workshopText.substring(lineEndBefore+1, lineEndAfter));
+	console.log(" ".repeat(workshopDiffOffset-lineEndBefore)+"^"); 
+	document.getElementById("workshop-textarea").selectionEnd = workshopDiffOffset;
+	
+	for (var i = 0; i < compiledDiffOffset+1; i++) {
+		if (/\s/.test(document.getElementById("compiled-textarea").value[i])) {
+			compiledDiffOffset++;
+		}
+	}
+	compiledDiffOffset--;
+	var compiledText = document.getElementById("compiled-textarea").value;
+	lineEndBefore = compiledText.substring(0, compiledDiffOffset).lastIndexOf('\n');
+	lineEndAfter = compiledDiffOffset+compiledText.substring(compiledDiffOffset).indexOf('\n');
+	console.log(compiledText.substring(lineEndBefore+1, lineEndAfter));
+	console.log(" ".repeat(compiledDiffOffset-lineEndBefore)+"^"); 
+	document.getElementById("compiled-textarea").selectionEnd = compiledDiffOffset;
+	
+}
+</script>
